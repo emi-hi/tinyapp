@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/emi-hi/tinyapp/issues"
   },
-  "homepage": "https://github.com/emi-hi/tinyapp#readme"
+  "homepage": "https://github.com/emi-hi/tinyapp#readme",
+  "dependencies": {
+    "ejs": "^2.7.1"
+  }
 }

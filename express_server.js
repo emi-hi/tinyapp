@@ -8,11 +8,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 function generateRandomString() {
   let result = '';
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 6; i++){
+  for (let i = 0; i < 6; i++) {
     result += chars[(Math.floor(Math.random() * chars.length))];
     
   }
-  return result
+  return result;
 }
 
 const urlDatabase = {
@@ -50,7 +50,6 @@ app.get("/u/:shortURL", (req, res) => {
   // const longURL = ...
   res.redirect(urlDatabase[req.params.shortURL]);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

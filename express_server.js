@@ -41,9 +41,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   shortened = generateRandomString()
-  long = req.body["longURL"]
-  urlDatabase[shortened] = long
-  console.log(urlDatabase)
+  urlDatabase[shortened] = req.body["longURL"];;
   res.redirect(`/urls/${shortened}`)
 
 });

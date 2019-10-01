@@ -10,6 +10,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!-- Check if there is a username and show either a "hello" message with logout option or a login form -->
     <% if (typeof username != "undefined") { %>
         <form class="form-inline" action="/urls/logout" method="POST"> 
           <label>Hello <%=username%>!&nbsp;&nbsp;&nbsp;&nbsp;</label>
@@ -21,6 +22,8 @@
         <button type="submit" class="btn btn-outline-dark">login</button>
       </form>
     <% } %>
+
+    
 
   </nav>
 </header>

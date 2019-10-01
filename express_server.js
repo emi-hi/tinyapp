@@ -11,7 +11,6 @@ function generateRandomString() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 6; i++) {
     result += chars[(Math.floor(Math.random() * chars.length))];
-    
   }
   return result;
 }
@@ -29,15 +28,13 @@ app.get("/", (req, res) => {
 
 // URLS index
 app.get("/urls", (req, res) => {
-
   let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
 // add a new URL
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"]
-  }
+  let templateVars = { username: req.cookies["username"] }
   res.render("urls_new", templateVars);
 });
 
@@ -49,6 +46,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${shortURL}`)
 });
 
+//if the user hits the logout button, clear cookies and redirect to main page
 app.post("/urls/logout", (req, res) => {
   res.clearCookie("username", req.cookies["username"] )
   res.redirect("/urls")

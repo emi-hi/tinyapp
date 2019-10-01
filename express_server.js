@@ -21,24 +21,37 @@ const urlDatabase = {
 };
 app.set("view engine", "ejs");
 
+//main page / index
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// URLS index
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+// add a new URL
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//EDIT THE LONG VERSION
+app.post("/urls/:shortURL/edit", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = req.body["longURL"]
+  urlDatabase[shortURL] = longURL
+  res.redirect(`/urls/${shortURL}`)
+});
+
+// page with info on specific URL! Short and long
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
+//create shortened string and redirect!
 app.post("/urls", (req, res) => {
   shortened = generateRandomString()
   urlDatabase[shortened] = req.body["longURL"];;
@@ -46,10 +59,17 @@ app.post("/urls", (req, res) => {
 
 });
 
+//if user goes to the shortened URL, redirect to the long version! 
 app.get("/u/:shortURL", (req, res) => {
-  // const longURL = ...
   res.redirect(urlDatabase[req.params.shortURL]);
 });
+
+//DELETE
+app.post("/urls/:shortURL/delete", (req, res) => {
+  // delete urlDatabase[]
+  delete urlDatabase[req.params.shortURL];
+  res.redirect(`/urls`);
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

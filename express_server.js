@@ -6,10 +6,38 @@ const cookieParser = require("cookie-parser")
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-function generateRandomString() {
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+function validateEmail(email, password) {
+  if (email == '' | password == '') {
+    return false;
+  }
+  else {
+    for (let k in users) {
+      if (users[k]["email"] === email) {
+        return false
+      }
+    } 
+  }
+  return true 
+}
+
+function generateRandomString(max) {
   let result = '';
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < max; i++) {
     result += chars[(Math.floor(Math.random() * chars.length))];
   }
   return result;
@@ -32,10 +60,35 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//register username 
+app.get("/urls/register", (req, res) => {
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  res.render("register", templateVars);
+});
+
 // add a new URL
 app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["username"] }
   res.render("urls_new", templateVars);
+});
+
+// add a new username
+app.post("/urls/register", (req, res) => {
+  let newEmail = req.body["email"];
+  console.log(newEmail)
+  if (validateEmail(newEmail)) {
+    let username = generateRandomString(10);
+    users[username] = {
+      id: username,
+      email: newEmail,
+      password: req.body["password"]
+    }
+    res.cookie("username", users[username])
+    res.redirect(`/urls/`);
+  } else {
+    res.status(400)
+    .send('400: Please enter a valid email/password')
+  }
 });
 
 //EDIT THE LONG VERSION
@@ -52,6 +105,13 @@ app.post("/urls/logout", (req, res) => {
   res.redirect("/urls")
 })
 
+//DELETE
+app.post("/urls/:shortURL/delete", (req, res) => {
+  // delete urlDatabase[]
+  delete urlDatabase[req.params.shortURL];
+  res.redirect(`/urls`);
+})
+
 // page with info on specific URL! Short and long
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
@@ -60,7 +120,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //create shortened string and redirect!
 app.post("/urls", (req, res) => {
-  shortened = generateRandomString()
+  shortened = generateRandomString(6)
   urlDatabase[shortened] = req.body["longURL"];;
   res.redirect(`/urls/${shortened}`)
 
@@ -68,6 +128,7 @@ app.post("/urls", (req, res) => {
 //when a user logs in, redirect to the homepage!
 app.post("/login", (req, res) => {
   username = req.body["username"]
+  email = req.body["email"];
   res.cookie("username", username)
   res.redirect('/urls')
 })
@@ -77,12 +138,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
 });
 
-//DELETE
-app.post("/urls/:shortURL/delete", (req, res) => {
-  // delete urlDatabase[]
-  delete urlDatabase[req.params.shortURL];
-  res.redirect(`/urls`);
-})
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

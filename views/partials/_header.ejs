@@ -11,19 +11,24 @@
       </div>
     </div>
     <!-- Check if there is a username and show either a "hello" message with logout option or a login form -->
-    <% if (typeof username != "undefined") { %>
+    
+    <% if (typeof user_id != "undefined") { %>
         <form class="form-inline" action="/urls/logout" method="POST"> 
-          <label>Hello <%=username%>!&nbsp;&nbsp;&nbsp;&nbsp;</label>
-          <button type="submit" class="btn btn-outline-dark">logout</button>
+          <label>Hello <%=user_id["email"]%>!&nbsp;&nbsp;&nbsp;&nbsp;</label>
+          <button type="submit" class="btn btn-outline-light">logout</button>
         </form>
     <% } else { %>
-      <form class="form-inline" action="/login" method="POST">
-        <input class="form-control" type="text" name="username" placeholder="username" style="width: 150px; margin: 1em;"> 
-        <button type="submit" class="btn btn-outline-dark">login</button>
+      <form class="form-inline" action="/login" method="GET">
+        <button type="submit" class="btn btn-outline-light">login</button>
       </form>
+      <form class="form-inline" action="/urls/register" method="GET">
+        <button type="submit" class="btn btn-outline-light">register</button>
+      </form>
+      
+     
     <% } %>
 
-    
+
 
   </nav>
 </header>

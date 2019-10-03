@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-let cookieSession = require("cookie-session");
+const cookieSession = require("cookie-session");
 app.use(cookieSession({
   name: "session",
   keys: ["key1", "key2"]
@@ -55,46 +55,31 @@ app.get("/urls", (req, res) => {
     res.redirect("/login");
   }
   // else show the urls connected to that user
-  let urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
-  let templateVars = { urls: urlsToDisplay, user_id: req.session.user_id };
+  const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
+  const templateVars = { urls: urlsToDisplay, user_id: req.session.user_id };
   res.render("urls_index", templateVars);
 });
 
 //register username
 app.get("/urls/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, user_id: req.session.user_id };
+  const templateVars = { urls: urlDatabase, user_id: req.session.user_id };
   res.render("register", templateVars);
 });
 
 //register username
 app.get("/login", (req, res) => {
-  let templateVars = { urls: urlDatabase, user_id: req.session.user_id };
+  const templateVars = { urls: urlDatabase, user_id: req.session.user_id };
   res.render("login", templateVars);
 });
 
 // add a new URL
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user_id: req.session.user_id };
+  const templateVars = { user_id: req.session.user_id };
   if (templateVars["user_id"] === undefined) {
     res.redirect("/login");
   } else {
     res.render("urls_new", templateVars);
   }
-});
-
-// error!
-app.get("/error", (req, res) => {
-  let templateVars = { user_id: req.session.user_id };
-  res.render("error", templateVars);
-});
-//login error
-app.get("/loginError", (req, res) => {
-  res.render("error_login");
-});
-
-//reg error
-app.get("/regError", (req, res) => {
-  res.render("error_reg");
 });
 
 //if user goes to the shortened URL, redirect to the long version!
@@ -105,14 +90,34 @@ app.get("/u/:shortURL", (req, res) => {
 // page with info on specific URL! Short and long
 app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
-    let urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
+    const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      let templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id };
+      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id };
       res.render("urls_show", templateVars);
     }
   }
   res.status(401);
   res.redirect("/error");
+});
+
+/* 
+.......
+Errors
+.......
+*/
+// error for if page doesn't exist or they don't have access
+app.get("/error", (req, res) => {
+  const templateVars = { user_id: req.session.user_id };
+  res.render("error", templateVars);
+});
+// login error
+app.get("/loginError", (req, res) => {
+  res.render("error_login");
+});
+
+// registration error
+app.get("/regError", (req, res) => {
+  res.render("error_reg");
 });
 
 //------------------------------
@@ -121,13 +126,13 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // add a new username
 app.post("/urls/register", (req, res) => {
-  let newEmail = req.body["email"];
-  let userPass = req.body["password"];
+  const newEmail = req.body["email"];
+  const userPass = req.body["password"];
   if (newEmail === "" | userPass === "" | getUserByEmail(users, newEmail) !== undefined) {
     res.redirect("/regError");
   }
-  let id = generateRandomString(10);
-  let hashedPass = bcrypt.hashSync(userPass, 10);
+  const id = generateRandomString(10);
+  const hashedPass = bcrypt.hashSync(userPass, 10);
   users[id] = {
     id: id,
     email: newEmail,
@@ -145,10 +150,10 @@ app.post("/urls/logout", (req, res) => {
 
 //when a user logs in, redirect to the homepage!
 app.post("/login", (req, res) => {
-  let email = req.body["email"];
-  let userPass = req.body["password"];
+  const email = req.body["email"];
+  const userPass = req.body["password"];
   if (getUserByEmail(users, email) !== undefined) {
-    let id = getUserByEmail(users, email);
+    const id = getUserByEmail(users, email);
     if (bcrypt.compareSync(userPass, users[id]["password"])) {
       req.session.user_id = users[id];
       res.redirect("/urls");
@@ -174,7 +179,7 @@ app.post("/urls", (req, res) => {
 // EDIT THE LONG VERSION OF URL
 app.post("/urls/:shortURL/edit", (req, res) => {
   if (req.session.user_id !== undefined) {
-    let urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
+    const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
       const shortURL = req.params.shortURL;
       const longURL = req.body["longURL"];
@@ -192,7 +197,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 // DELETE URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user_id !== undefined) {
-    let urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
+    const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
       delete urlDatabase[req.params.shortURL];
       res.redirect(`/urls`);

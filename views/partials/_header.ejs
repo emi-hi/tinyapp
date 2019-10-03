@@ -11,7 +11,6 @@
       </div>
     </div>
     <!-- Check if there is a username and show either a "hello" message with logout option or a login form -->
-    
     <% if (typeof user_id != "undefined") { %>
         <form class="form-inline" action="/urls/logout" method="POST"> 
           <label>Hello <%=user_id["email"]%>!&nbsp;&nbsp;&nbsp;&nbsp;</label>

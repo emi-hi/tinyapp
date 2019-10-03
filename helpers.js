@@ -9,7 +9,7 @@ const urlsForUser = function(user, urlDb) {
     urlsToDisplay[i] = urlDb[i]["longUrl"];
   }
   return urlsToDisplay;
-}
+};
 
 const generateRandomString = function(max) {
   let result = '';
@@ -21,6 +21,6 @@ const generateRandomString = function(max) {
 };
 
 module.exports = { getUserByEmail ,
-                   urlsForUser,
-                   generateRandomString
-                  };
+  urlsForUser,
+  generateRandomString
+};

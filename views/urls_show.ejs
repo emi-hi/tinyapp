@@ -19,7 +19,8 @@
         </div>
         <div class="card-footer text-secondary">
         <h4 class="card-title">Edit</h4>
-        <form method="POST" action="/urls/<%=shortURL%>/edit">
+        <form method="POST" action="/urls/<%=shortURL%>?_method=PUT">
+          <input type="hidden" name="_method" value="put"/>
           <label for="longURL">Long URL: </label>
           <input id="longURL" name="longURL" type="text"> <button type="edit" button class="btn btn-primary">Submit edits</button>
         </div>

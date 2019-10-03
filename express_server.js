@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
@@ -9,7 +11,6 @@ app.use(cookieSession({
   name: "session",
   keys: ["key1", "key2"]
 }));
-
 const { getUserByEmail, urlsForUser, generateRandomString } = require("./helpers");
       
 // USER DATABASE
@@ -177,7 +178,7 @@ app.post("/urls", (req, res) => {
 });
 
 // EDIT THE LONG VERSION OF URL
-app.post("/urls/:shortURL/edit", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
@@ -195,7 +196,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 
 // DELETE URL
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {

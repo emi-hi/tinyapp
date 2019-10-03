@@ -15,24 +15,19 @@ const { getUserByEmail, urlsForUser, generateRandomString } = require("./helpers
       
 // USER DATABASE
 let users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  },
+  "Emily": {
+    id: "123",
+    email: "1@1.com",
+    password: "$2b$10$TX24JwNR83Jb35l9wX9EwepkmuHaxaqUFGDFE8V0DBrTPHjKqy72O"
+  }
 };
 
 //URL DATABASE
 let urlDatabase = {
-  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "aJ48lW" },
-  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "aJ48lW" },
-  "9sm5xK": { longUrl: "http://www.google.com", userId: "Emily" },
-  "xxxxxx": { longUrl: "http://www.example.com", userId: "Emily" },
+  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0 },
+  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0 },
+  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0 },
+  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0 },
 };
 
 app.set("view engine", "ejs");
@@ -61,13 +56,13 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//register username
+//register username page
 app.get("/urls/register", (req, res) => {
   const templateVars = { urls: urlDatabase, user_id: req.session.user_id };
   res.render("register", templateVars);
 });
 
-//register username
+//login page
 app.get("/login", (req, res) => {
   const templateVars = { urls: urlDatabase, user_id: req.session.user_id };
   res.render("login", templateVars);
@@ -85,6 +80,7 @@ app.get("/urls/new", (req, res) => {
 
 //if user goes to the shortened URL, redirect to the long version!
 app.get("/u/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL]["visits"] += 1
   res.redirect(urlDatabase[req.params.shortURL]["longUrl"]);
 });
 
@@ -93,7 +89,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id };
+      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id, visits: urlDatabase[req.params.shortURL]["visits"] };
       res.render("urls_show", templateVars);
     }
   }
@@ -169,7 +165,8 @@ app.post("/urls", (req, res) => {
     const shortened = generateRandomString(6);
     urlDatabase[shortened] = {
       longUrl: req.body["longURL"],
-      userId: req.session.user_id["id"]
+      userId: req.session.user_id["id"],
+      visits: 0
     };
     res.redirect(`/urls/${shortened}`);
   }

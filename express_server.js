@@ -11,7 +11,7 @@ app.use(cookieSession({
   name: "session",
   keys: ["key1", "key2"]
 }));
-const { getUserByEmail, urlsForUser, generateRandomString } = require("./helpers");
+const { getUserByEmail, urlsForUser, generateRandomString, createDate } = require("./helpers");
       
 // USER DATABASE
 let users = {
@@ -24,10 +24,10 @@ let users = {
 
 //URL DATABASE
 let urlDatabase = {
-  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0 },
-  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0 },
-  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0 },
-  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0 },
+  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
+  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
+  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0},
+  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
 };
 
 app.set("view engine", "ejs");
@@ -89,12 +89,13 @@ app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id, visits: urlDatabase[req.params.shortURL]["visits"] };
+      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id, visits: urlDatabase[req.params.shortURL]["visits"], dateCreated: urlDatabase[req.params.shortURL]["dateCreated"] };
       res.render("urls_show", templateVars);
     }
-  }
-  res.status(401);
+  } else {
+  // res.status(401);
   res.redirect("/error");
+  }
 });
 
 /* 
@@ -127,16 +128,17 @@ app.post("/urls/register", (req, res) => {
   const userPass = req.body["password"];
   if (newEmail === "" | userPass === "" | getUserByEmail(users, newEmail) !== undefined) {
     res.redirect("/regError");
+  } else {
+    const id = generateRandomString(10);
+    const hashedPass = bcrypt.hashSync(userPass, 10);
+    users[id] = {
+      id: id,
+      email: newEmail,
+      password: hashedPass
+    };
+    req.session.user_id = users[id];
+    res.redirect(`/urls/`);
   }
-  const id = generateRandomString(10);
-  const hashedPass = bcrypt.hashSync(userPass, 10);
-  users[id] = {
-    id: id,
-    email: newEmail,
-    password: hashedPass
-  };
-  req.session.user_id = users[id];
-  res.redirect(`/urls/`);
 });
 
 // LOGOUT USER
@@ -155,23 +157,27 @@ app.post("/login", (req, res) => {
       req.session.user_id = users[id];
       res.redirect("/urls");
     }
+  } else {
+    res.redirect("/loginError");
   }
-  res.redirect("/loginError");
 });
 
 //create shortened string and redirect!
 app.post("/urls", (req, res) => {
   if (req.session.user_id !== undefined) {
     const shortened = generateRandomString(6);
+    fullDate = createDate();
     urlDatabase[shortened] = {
       longUrl: req.body["longURL"],
       userId: req.session.user_id["id"],
-      visits: 0
+      visits: 0,
+      dateCreated: fullDate
     };
     res.redirect(`/urls/${shortened}`);
+  } else {
+    res.status(401);
+    res.redirect("/error");
   }
-  res.status(401);
-  res.redirect("/error");
 });
 
 // EDIT THE LONG VERSION OF URL
@@ -179,16 +185,20 @@ app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
+      fullDate = createDate();
       const shortURL = req.params.shortURL;
       const longURL = req.body["longURL"];
       urlDatabase[shortURL] = {
         longUrl: longURL,
-        userId: req.session.user_id["id"]
+        userId: req.session.user_id["id"],        
+        visits: 0,
+        dateCreated: fullDate
       };
       res.redirect(`/urls/${shortURL}`);
+    } else {
+      res.status(401);
+      res.redirect("/error");
     }
-    res.status(401);
-    res.redirect("/error");
   }
 });
 
@@ -200,9 +210,10 @@ app.delete("/urls/:shortURL", (req, res) => {
       delete urlDatabase[req.params.shortURL];
       res.redirect(`/urls`);
     }
+  } else {  
+    res.status(401);
+    res.redirect("/error");
   }
-  res.status(401);
-  res.redirect("/error");
 });
 
 // ----------------------------------------------------

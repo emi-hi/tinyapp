@@ -20,7 +20,13 @@ const generateRandomString = function(max) {
   return result;
 };
 
+const createDate = function() {
+  let d = new Date()
+  let fullDate = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + (d.getDate())
+  return fullDate
+}
 module.exports = { getUserByEmail ,
   urlsForUser,
-  generateRandomString
+  generateRandomString,
+  createDate
 };

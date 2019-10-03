@@ -15,7 +15,8 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-        <p class="card-text">Number of visits: <%= visits %></a></p>
+        <p class="card-text"><b> <%= visits %></b> visits </p>
+        <p class="card-text">since creation on <%= dateCreated %></a></p>
         <br/>
         </div>
         <div class="card-footer text-secondary">

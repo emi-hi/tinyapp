@@ -2,9 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+const cookieParser = require("cookie-parser");
 app.use(cookieParser());
+const bcrypt = require('bcrypt');
 
 
 const users = {
@@ -27,6 +28,7 @@ const users = {
 
 const urlDatabase = {
   "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "aJ48lW" },
+  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "aJ48lW" },
   "9sm5xK": { longUrl: "http://www.google.com", userId: "Emily" },
   "xxxxxx": { longUrl: "http://www.example.com", userId: "Emily" },
 };
@@ -108,12 +110,7 @@ app.get("/urls/new", (req, res) => {
 
 //if user goes to the shortened URL, redirect to the long version!
 app.get("/u/:shortURL", (req, res) => {
-  urlsToDisplay = urlsForUser(req.cookies["user_id"]["id"]);
-  if (urlsToDisplay[req.params.shortURL] === undefined) {
-    res.status(404)
-    res.send("Page not found!")
-  }
-  res.redirect(urlsToDisplay[req.params.shortURL]);
+  res.redirect(urlDatabase[req.params.shortURL]["longUrl"]);
 });
 
 // page with info on specific URL! Short and long
@@ -136,10 +133,12 @@ app.post("/urls/register", (req, res) => {
   let newEmail = req.body["email"];
   if (!validateEmail(newEmail)) {
     let id = generateRandomString(10);
+    let userPass = req.body["password"]
+    let hashedPass = bcrypt.hashSync(userPass, 10)
     users[id] = {
       id: id,
       email: newEmail,
-      password: req.body["password"]
+      password: hashedPass
     };
     res.cookie("user_id", users[id]);
     res.redirect(`/urls/`);
@@ -157,10 +156,10 @@ app.post("/urls/logout", (req, res) => {
 //when a user logs in, redirect to the homepage!
 app.post("/login", (req, res) => {
   let email = req.body["email"];
-  let password = req.body["password"];
+  let userPass = req.body["password"];
   if (validateEmail(email)) {
     let id = getIDFromEmail(users, email);
-    if (password === (users[id]["password"])) {
+    if (bcrypt.compareSync(userPass, users[id]["password"])) {
       res.cookie("user_id", users[id]);
       res.redirect('/urls');
     }
@@ -182,6 +181,11 @@ app.post("/urls", (req, res) => {
 
 // EDIT THE LONG VERSION OF URL
 app.post("/urls/:shortURL/edit", (req, res) => {
+  urlsToDisplay = urlsForUser(req.cookies["user_id"]["id"]);
+  if (urlsToDisplay[req.params.shortURL] === undefined) {
+    res.status(404)
+    res.send("Page not found!")
+  }
   const shortURL = req.params.shortURL;
   const longURL = req.body["longURL"];
   urlDatabase[shortURL] = {
@@ -194,6 +198,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 // DELETE URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   // delete urlDatabase[]
+  urlsToDisplay = urlsForUser(req.cookies["user_id"]["id"]);
+  if (urlsToDisplay[req.params.shortURL] === undefined) {
+    res.status(404)
+    res.send("Page not found!")
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect(`/urls`);
 });

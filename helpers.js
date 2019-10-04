@@ -21,10 +21,10 @@ const generateRandomString = function(max) {
 };
 
 const createDate = function() {
-  let d = new Date()
-  let fullDate = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + (d.getDate())
-  return fullDate
-}
+  let d = new Date();
+  let fullDate = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + (d.getDate());
+  return fullDate;
+};
 module.exports = { getUserByEmail ,
   urlsForUser,
   generateRandomString,

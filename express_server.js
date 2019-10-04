@@ -40,8 +40,9 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => {
   if (req.session.user_id === undefined) {
     res.redirect("/login");
+  } else {
+    res.redirect("/urls");
   }
-  res.redirect("/urls");
 });
 
 // URLS index
@@ -49,11 +50,12 @@ app.get("/urls", (req, res) => {
   // if the user is not logged in, redirect to the login page
   if (req.session.user_id === undefined) {
     res.redirect("/login");
-  }
+  } else {
   // else show the urls connected to that user
-  const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
-  const templateVars = { urls: urlsToDisplay, user_id: req.session.user_id };
-  res.render("urls_index", templateVars);
+    const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
+    const templateVars = { urls: urlsToDisplay, user_id: req.session.user_id };
+    res.render("urls_index", templateVars);
+  }
 });
 
 //register username page
@@ -80,17 +82,17 @@ app.get("/urls/new", (req, res) => {
 
 //if user goes to the shortened URL, redirect to the long version!
 app.get("/u/:shortURL", (req, res) => {
-  fullTime = new Date()
+  const fullTime = new Date();
   if (req.session.visitor === undefined) {
-    visitorId = generateRandomString(8)
-    req.session.visitor = visitorId
+    const visitorId = generateRandomString(8);
+    req.session.visitor = visitorId;
     urlDatabase[req.params.shortURL]["uniqueVisitors"] = [visitorId];
   } else {
     if (!urlDatabase[req.params.shortURL]["uniqueVisitors"].includes(req.session.visitor)) {
-      urlDatabase[req.params.shortURL]["uniqueVisitors"].push(req.session.visitor)
-    } 
+      urlDatabase[req.params.shortURL]["uniqueVisitors"].push(req.session.visitor);
+    }
   }
-  urlDatabase[req.params.shortURL]["timeStamps"][fullTime] = req.session.visitor
+  urlDatabase[req.params.shortURL]["timeStamps"][fullTime] = req.session.visitor;
   urlDatabase[req.params.shortURL]["visits"] += 1;
   res.redirect(urlDatabase[req.params.shortURL]["longUrl"]);
 });
@@ -100,13 +102,13 @@ app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      const templateVars = { shortURL: req.params.shortURL, 
-      longURL: urlsToDisplay[req.params.shortURL], 
-      user_id: req.session.user_id, 
-      visits: urlDatabase[req.params.shortURL]["visits"], 
-      dateCreated: urlDatabase[req.params.shortURL]["dateCreated"],
-      uniqueVisits: urlDatabase[req.params.shortURL]["uniqueVisitors"].length,
-      timeStamps: urlDatabase[req.params.shortURL]["timeStamps"]  };
+      const templateVars = { shortURL: req.params.shortURL,
+        longURL: urlsToDisplay[req.params.shortURL],
+        user_id: req.session.user_id,
+        visits: urlDatabase[req.params.shortURL]["visits"],
+        dateCreated: urlDatabase[req.params.shortURL]["dateCreated"],
+        uniqueVisits: urlDatabase[req.params.shortURL]["uniqueVisitors"].length,
+        timeStamps: urlDatabase[req.params.shortURL]["timeStamps"]  };
       res.render("urls_show", templateVars);
     } else {
       res.status(401);
@@ -119,7 +121,7 @@ app.get("/urls/:shortURL", (req, res) => {
   
 });
 
-/* 
+/*
 .......
 Errors
 .......
@@ -187,7 +189,7 @@ app.post("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   if (req.session.user_id !== undefined) {
     const shortened = generateRandomString(6);
-    fullDate = createDate();
+    const fullDate = createDate();
     urlDatabase[shortened] = {
       longUrl: req.body["longURL"],
       userId: req.session.user_id["id"],
@@ -208,12 +210,12 @@ app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      fullDate = createDate();
+      const fullDate = createDate();
       const shortURL = req.params.shortURL;
       const longURL = req.body["longURL"];
       urlDatabase[shortURL] = {
         longUrl: longURL,
-        userId: req.session.user_id["id"],        
+        userId: req.session.user_id["id"],
         visits: 0,
         dateCreated: fullDate,
         uniqueVisitors: [],
@@ -235,7 +237,7 @@ app.delete("/urls/:shortURL", (req, res) => {
       delete urlDatabase[req.params.shortURL];
       res.redirect(`/urls`);
     }
-  } else {  
+  } else {
     res.status(401);
     res.redirect("/error");
   }
@@ -243,6 +245,6 @@ app.delete("/urls/:shortURL", (req, res) => {
 
 // ----------------------------------------------------
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
 

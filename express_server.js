@@ -12,7 +12,7 @@ app.use(cookieSession({
   keys: ["key1", "key2"]
 }));
 const { getUserByEmail, urlsForUser, generateRandomString, createDate } = require("./helpers");
-      
+
 // USER DATABASE
 let users = {
   "Emily": {
@@ -22,14 +22,12 @@ let users = {
   }
 };
 
-let visitors = {};
-
 //URL DATABASE
 let urlDatabase = {
-  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
-  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
-  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
-  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
+  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [], timeStamps: {} },
+  "F2gn3L": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [], timeStamps: {} },
+  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [], timeStamps: {} },
+  "x3E5G6": { longUrl: "http://www.example.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [], timeStamps: {} },
 };
 
 app.set("view engine", "ejs");
@@ -92,6 +90,7 @@ app.get("/u/:shortURL", (req, res) => {
       urlDatabase[req.params.shortURL]["uniqueVisitors"].push(req.session.visitor)
     } 
   }
+  urlDatabase[req.params.shortURL]["timeStamps"][fullTime] = req.session.visitor
   urlDatabase[req.params.shortURL]["visits"] += 1;
   res.redirect(urlDatabase[req.params.shortURL]["longUrl"]);
 });
@@ -106,13 +105,18 @@ app.get("/urls/:shortURL", (req, res) => {
       user_id: req.session.user_id, 
       visits: urlDatabase[req.params.shortURL]["visits"], 
       dateCreated: urlDatabase[req.params.shortURL]["dateCreated"],
-      uniqueVisits: urlDatabase[req.params.shortURL]["uniqueVisitors"].length };
+      uniqueVisits: urlDatabase[req.params.shortURL]["uniqueVisitors"].length,
+      timeStamps: urlDatabase[req.params.shortURL]["timeStamps"]  };
       res.render("urls_show", templateVars);
+    } else {
+      res.status(401);
+      res.redirect("/error");
     }
   } else {
-  // res.status(401);
-  res.redirect("/error");
+    res.status(401);
+    res.redirect("/error");
   }
+  
 });
 
 /* 
@@ -188,7 +192,9 @@ app.post("/urls", (req, res) => {
       longUrl: req.body["longURL"],
       userId: req.session.user_id["id"],
       visits: 0,
-      dateCreated: fullDate
+      dateCreated: fullDate,
+      uniqueVisitors: [],
+      timeStamps: {}
     };
     res.redirect(`/urls/${shortened}`);
   } else {
@@ -209,7 +215,9 @@ app.put("/urls/:shortURL", (req, res) => {
         longUrl: longURL,
         userId: req.session.user_id["id"],        
         visits: 0,
-        dateCreated: fullDate
+        dateCreated: fullDate,
+        uniqueVisitors: [],
+        timeStamps: {}
       };
       res.redirect(`/urls/${shortURL}`);
     } else {

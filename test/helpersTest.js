@@ -23,8 +23,6 @@ const urlDatabase = {
   "xxxxxx": { longUrl: "http://www.example.com", userId: "Emily" },
 };
 
-
-
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
     const user = getUserByEmail(testUsers, "user@example.com");

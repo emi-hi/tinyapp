@@ -22,12 +22,14 @@ let users = {
   }
 };
 
+let visitors = {};
+
 //URL DATABASE
 let urlDatabase = {
-  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
-  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
-  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0},
-  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisits: 0 },
+  "b2xVn2": { longUrl: "http://www.lighthouselabs.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
+  "b2xVn3": { longUrl: "http://www.cbc.ca", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
+  "9sm5xK": { longUrl: "http://www.google.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
+  "xxxxxx": { longUrl: "http://www.example.com", userId: "123", visits: 0, dateCreated: "2019-10-2", uniqueVisitors: [] },
 };
 
 app.set("view engine", "ejs");
@@ -80,7 +82,17 @@ app.get("/urls/new", (req, res) => {
 
 //if user goes to the shortened URL, redirect to the long version!
 app.get("/u/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL]["visits"] += 1
+  fullTime = new Date()
+  if (req.session.visitor === undefined) {
+    visitorId = generateRandomString(8)
+    req.session.visitor = visitorId
+    urlDatabase[req.params.shortURL]["uniqueVisitors"] = [visitorId];
+  } else {
+    if (!urlDatabase[req.params.shortURL]["uniqueVisitors"].includes(req.session.visitor)) {
+      urlDatabase[req.params.shortURL]["uniqueVisitors"].push(req.session.visitor)
+    } 
+  }
+  urlDatabase[req.params.shortURL]["visits"] += 1;
   res.redirect(urlDatabase[req.params.shortURL]["longUrl"]);
 });
 
@@ -89,7 +101,12 @@ app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id !== undefined) {
     const urlsToDisplay = urlsForUser(req.session.user_id["id"], urlDatabase);
     if (urlsToDisplay[req.params.shortURL] !== undefined) {
-      const templateVars = { shortURL: req.params.shortURL, longURL: urlsToDisplay[req.params.shortURL], user_id: req.session.user_id, visits: urlDatabase[req.params.shortURL]["visits"], dateCreated: urlDatabase[req.params.shortURL]["dateCreated"] };
+      const templateVars = { shortURL: req.params.shortURL, 
+      longURL: urlsToDisplay[req.params.shortURL], 
+      user_id: req.session.user_id, 
+      visits: urlDatabase[req.params.shortURL]["visits"], 
+      dateCreated: urlDatabase[req.params.shortURL]["dateCreated"],
+      uniqueVisits: urlDatabase[req.params.shortURL]["uniqueVisitors"].length };
       res.render("urls_show", templateVars);
     }
   } else {
